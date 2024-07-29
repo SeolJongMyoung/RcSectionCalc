@@ -79,7 +79,10 @@ class CalcReinfoeceConcrete:
     
         self.lo_bal = (0.85 * self.beta_1 * self.f_ck / self.f_y) * (6000 / (6000 + self.f_y))                         #균형철근비
         self.lo_max = 0.75 * self.lo_bal                                                                               #최대철근비 
-        self.lo_min = max(0.8 * math.sqrt(self.f_ck) / self.f_y, 1.4 / self.f_y)                                       #최소철근비
+        self.lo_min_1 = 0.8 * math.sqrt(self.f_ck) / self.f_y                                                          #최소철근비
+        self.lo_min_2 = 1.4 / self.f_y
+                                                                                    
+        self.lo_min = max(self.lo_min_1, self.lo_min_2)                                       
 
         self.d_eff = self.beam_h - self.d_c                                                                            #단면 유효높이
         self.as_use = self.as_use1 * self.as_num1 + self.as_use2 * self.as_num2 + self.as_use3 * self.as_num3          #전체 사용철근량
@@ -105,10 +108,13 @@ class CalcReinfoeceConcrete:
         temp_a = (self.f_y**2)/(2 * 0.85 * self.f_ck * self.beam_b)
         temp_b = -self.f_y * self.d_eff
         self.as_req = (-temp_b - (temp_b**2 - 4 * temp_a * self.Mu_nm)**(1/2)) / (2 * temp_a)                          #필요철근량 산정
+
+        self.lo_min_3 = self.as_req * 4 / ( 3 * self.beam_b*self.d_eff )
+        self.lo_min_f = max(self.lo_min, self.lo_min_3)
+
+        as_min_1 = self.lo_min * self.beam_b * self.d_eff
+        as_min_2 = self.lo_min_f * self.beam_b * self.d_eff
         
-        as_min1 = self.lo_min * self.beam_b * self.d_eff
-        as_min2 = 4 * self.as_req / 3
-        self.as_min = min(as_min1,as_min2)
         self.as_max = self.lo_max * self.beam_b * self.d_eff
 
         self.M_r = self.as_use * self.pi_f_r * self.f_y * ( self.d_eff - self.a / 2 )
