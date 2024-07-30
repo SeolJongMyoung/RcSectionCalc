@@ -79,8 +79,8 @@ class CalcReinfoeceConcrete:
     
         self.lo_bal = (0.85 * self.beta_1 * self.f_ck / self.f_y) * (6000 / (6000 + self.f_y))                         #균형철근비
         self.lo_max = 0.75 * self.lo_bal                                                                               #최대철근비 
-        self.lo_min_1 = 0.8 * math.sqrt(self.f_ck) / self.f_y                                                          #최소철근비
-        self.lo_min_2 = 1.4 / self.f_y
+        self.lo_min_1 = 1.4 / self.f_y                                                                                 #최소철근비
+        self.lo_min_2 = 0.8 * math.sqrt(self.f_ck) / self.f_y
                                                                                     
         self.lo_min = max(self.lo_min_1, self.lo_min_2)                                       
 

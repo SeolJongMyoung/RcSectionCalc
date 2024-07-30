@@ -87,11 +87,24 @@ def create_excel_output(calculator):
 
     # Section 6: Reinforcement Check
     wsout['B31'].value = "6) 철근비 검토"
-    wsout['C32'].value = f"ρmin = max( (0.25 √fck / fy), (1.4 / fy) ) = {calculator.lo_min:.6f} "
-    if calculator.as_use >= calculator.as_min:
-        wsout['C33'].value = f"ρuse = {calculator.lo_use:.1f} mm² ≥ ρmin = {calculator.lo_min:.1f}   ∴ O.K"
-    else:
-        wsout['C33'].value = f"ρuse = {calculator.lo_use:.1f} mm² < ρmin = {calculator.lo_min:.1f}   ∴ N.G"
+    wsout['C32'].value = f"ρmin : 1.4 / fy          = {calculator.lo_min_1:.6f} "
+    wsout['C33'].value = f"       0.25 x √fck / fy  = {calculator.lo_min_2:.6f},  ρmin = {calculator.lo_min:.6f} 적용"
+    wsout['C34'].value = f"ρmax = 0.75 x ρb = 0.75 x (0.85 x β1 x fck / fy) x (6,000 / (6,000 + fy)) = {calculator.lo_bal:.6f}" 
+    wsout['C35'].value = f"ρuse = As / ( b x d ) = {calculator.lo_use:.6f} " 
+    if calculator.lo_use >= calculator.lo_min :
+        if calculator.lo_use < calculator.lo_max :
+            wsout['C36'].value = f"ρmax ≥ ρuse ≥ ρmin --> 최소철근비, 최대철근비 만족   ∴ O.K"
+        else:
+            wsout['C36'].value = f"ρmax < ρuse ≥ ρmin --> 최소철근비 만족, 최대 철근비 불만족   ∴ N.G"
+    else :
+        if calculator.lo_use < calculator.lo_max :
+            wsout['C36'].value = f"ρmax ≥ ρuse < ρmin --> 최소철근비 불만족,  최대 철근비 만족   ∴ N.G"
+            if calculator.lo_use >= calculator.lo_min_3 :
+                wsout['C37'].value = f"ρuse ≥ 4 x ρreq / 3 = {calculator.lo_min_3:.6f} --> 최소철근비 만족   ∴ O.K"
+            else :
+                wsout['C37'].value = f"ρuse < 4 x ρreq / 3 = {calculator.lo_min_3:.6f} --> 최소철근비 불만족   ∴ N.G"
+        else :    
+            wsout['C36'].value = f"ρmax < ρuse < ρmin --> 최소철근비, 최대 철근비 불만족   ∴ N.G"
 
     # Section 7: Neutral Axis Depth Check
     wsout['B44'].value = "7) 중립축 깊이 검토"
