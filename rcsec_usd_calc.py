@@ -125,7 +125,7 @@ class CalcReinfoeceConcrete:
 #          전단력 검토
 #------------------------------
 
-#    def calshear(self) :
+    def calc_shear(self) :
 #        self.k = 1+math.sqrt(200/self.D)     #단면크기효과 고려한 계수
 #        if self.k > 2 :
 #            self.k1 = 2
@@ -190,7 +190,7 @@ class CalcReinfoeceConcrete:
 #--------------------------------------
 #          사용성 검토(균열검토)
 #--------------------------------------
-#    def calservice(self):
+#    def calc_service(self):
 #        self.nr  = round( self.Es / (0.077*(2300)**(1.5)*(self.fck + self.Δf)**(1/3)))     #철근비 산정(반올림)
 #        self.Xo = (self.B*self.H**2/2 + (self.nr-1)*self.Asuse*self.D) / (self.B*self.H + (self.nr-1)*self.Asuse) 
 #        self.Io = self.B*self.H**3/12 + self.B*self.H*(self.H/2-self.Xo)**2 + (self.nr-1)*self.Asuse*(self.D-self.Xo)**2

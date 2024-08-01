@@ -60,8 +60,8 @@ def create_excel_output(calculator):
 
     # Section 3: Strength reduction factor
     wsout['B10'].value = '3) 강도감소계수(Ø) 산정'
-    wsout['C11'].value = f"T = As x fy = {calculator.as_use:.3f} x {calculator.f_y:.3f} = {calculator.tension_force:.3f} N"
-    wsout['C12'].value = f"C = 0.85 x fck x a x b = 0.85 x {calculator.f_ck:.3f} x a x {calculator.beam_b:.3f}"
+    wsout['C11'].value = f"T = As x fy = {calculator.as_use:.3f} x {calculator.f_y:.3f} = {calculator.tension_force:.1f} N"
+    wsout['C12'].value = f"C = 0.85 x fck x a x b = 0.85 x {calculator.f_ck:.3f} x a x {calculator.beam_b:.3f} = {calculator.compression_force:.1f} x a"
     wsout['C13'].value = f"T = C 이므로, a = {calculator.a:.3f} mm, c = {calculator.a:.3f} / β1 = {calculator.a:.3f} / {calculator.beta_1:.3f} = {calculator.c:.3f} mm"
     wsout['C14'].value = f"εy = fy / Es = {calculator.f_y:.2f} / {calculator.E_s:.2f} = {calculator.epsilon_y:.5f}"
     wsout['C15'].value = f"εt = 0.00300 x (dt - c) / c = 0.00300 x ({calculator.d_eff:.3f} - {calculator.c:.2f}) / {calculator.c:.2f} = {calculator.epsilon_t:.5f}"
@@ -106,24 +106,15 @@ def create_excel_output(calculator):
         else :    
             wsout['C36'].value = f"ρmax < ρuse < ρmin --> 최소철근비, 최대 철근비 불만족   ∴ N.G"
 
-    # Section 7: Neutral Axis Depth Check
-    wsout['B44'].value = "7) 중립축 깊이 검토"
-    wsout['C45'].value = f"C = a / β1 = {calculator.a:.1f} / {calculator.beta_1:.3f} = {calculator.c:.1f} mm"
-
-    # Section 8: Tensile Reinforcement Strain
-    wsout['B51'].value = "8) 인장철근 변형률"
-    wsout['C52'].value = f"εt = {calculator.epsilon_t:.5f}"
-    wsout['C53'].value = f"εy = {calculator.epsilon_y:.5f}"
-    wsout['C54'].value = f"Strain check result: {calculator.epsilon_t_result}"
-
-    # Section 9: Design Flexural Strength Calculation
-    wsout['B57'].value = "9) 설계 휨강도 산정"
-    wsout['C58'].value = f"Mr = As x Øf x fy x (d - a / 2)"
-    wsout['C59'].value = f"   = {calculator.as_use:.1f} x {calculator.pi_f_r:.2f} x {calculator.f_y} x ({calculator.d_eff:.1f} - {calculator.a:.1f} / 2)"
+    # Section 7: Design Flexural Strength Calculation
+    wsout['B39'].value = "7) 설계 휨강도 산정"
+    wsout['C40'].value = f"a = As x fy / (0.85 x fck x b) = {calculator.a:.3f}mm"
+    wsout['C41'].value = f"Ø Mn = Øf x As x fy x (d - a / 2)"
+    wsout['C42'].value = f"     = {calculator.pi_f_r:.2f} x {calculator.as_use:.1f} x {calculator.f_y} x ({calculator.d_eff:.1f} - {calculator.a:.3f} / 2)"
     if calculator.M_r > calculator.Mu_nm:
-        wsout['C60'].value = f"   = {calculator.M_r:.1f} N.mm ≥ Mu = {calculator.Mu_nm:.1f} N.mm  ∴ O.K  [S.F = {calculator.M_sf:.3f}]"
+        wsout['C43'].value = f"     = {calculator.M_r:.1f} N.mm ≥ Mu = {calculator.Mu_nm:.1f} N.mm  ∴ O.K  [S.F = {calculator.M_sf:.3f}]"
     else:
-        wsout['C60'].value = f"   = {calculator.M_r:.1f} N.mm < Mu = {calculator.Mu_nm:.1f} N.mm  ∴ N.G  [S.F = {calculator.M_sf:.3f}]"
+        wsout['C43'].value = f"     = {calculator.M_r:.1f} N.mm < Mu = {calculator.Mu_nm:.1f} N.mm  ∴ N.G  [S.F = {calculator.M_sf:.3f}]"
 
     # Save the workbook
     wb.save('Calc_As_Output.xlsx')
