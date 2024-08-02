@@ -23,29 +23,30 @@ class CalcReinfoeceConcrete:
 
         self.pi_f = processed_data[0][2]            #Øf설정
         self.pi_v = processed_data[0][3]            #Øv설정
-        self.Mu = processed_data[0][4]            #Mu설정
-        self.Vu = processed_data[0][5]            #Vu설정  
-        self.Nu = processed_data[0][6]            #Nu설정
-        self.Ms = processed_data[0][7]            #Ms설정
-        self.beam_h = processed_data[0][8]             #단면두께 설정
-        self.beam_b = processed_data[0][9]             #단면 폭 설정
-        self.as_dia1 = processed_data[1][0]        #1단 철근직경 설정
-        self.as_num1 = processed_data[1][1]        #1단 철근개수 설정
-        self.dc_1 = processed_data[1][2]           #1단 피복두께 설정
-        self.as_dia2 = processed_data[1][3]        #2단 철근직경 설정
-        self.as_num2 = processed_data[1][4]        #2단 철근개수 설정
-        self.dc_2 = processed_data[1][5]           #2단 피복두께 설정
-        self.as_dia3 = processed_data[1][6]        #3단 철근직경 설정
-        self.as_num3 = processed_data[1][7]        #3단 철근개수 설정
-        self.dc_3 = processed_data[1][8]           #3단 피복두께 설정
-        self.av_dia = processed_data[2][0]         #전단철근 직경
-        self.av_leg = processed_data[2][1]         #전단철근 다리개수
-        self.av_space = processed_data[2][2]       #전단철근 배치간격
-        self.sg = processed_data[2][3]             #복부스트럿 각도 입력방법 선택
-        self.seta = processed_data[2][4]           #복부스트럿 각도 직접입력값
-        self.alpha_dgree = processed_data[2][5]    #전단철근과 주철근 각도(주철근으로부터 시계방향각도)
-#        self.δ = 1                                #재분배 모멘트율 설정
-        self.E_s = self.rebar_material.E_s   #철근의 탄성계수
+        self.Mu = processed_data[0][4]              #Mu설정
+        self.Vu = processed_data[0][5]              #Vu설정  
+        self.Nu = processed_data[0][6]              #Nu설정
+        self.Ms = processed_data[0][7]              #Ms설정
+        self.beam_h = processed_data[0][8]          #휨 단면두께 설정
+        self.beam_h_v = processed_data[0][9]        #전단 단면두께 설정
+        self.beam_b = processed_data[0][10]         #단면 폭 설정
+        self.as_dia1 = processed_data[1][0]         #1단 철근직경 설정
+        self.as_num1 = processed_data[1][1]         #1단 철근개수 설정
+        self.dc_1 = processed_data[1][2]            #1단 피복두께 설정
+        self.as_dia2 = processed_data[1][3]         #2단 철근직경 설정
+        self.as_num2 = processed_data[1][4]         #2단 철근개수 설정
+        self.dc_2 = processed_data[1][5]            #2단 피복두께 설정
+        self.as_dia3 = processed_data[1][6]         #3단 철근직경 설정
+        self.as_num3 = processed_data[1][7]         #3단 철근개수 설정
+        self.dc_3 = processed_data[1][8]            #3단 피복두께 설정
+        self.av_dia = processed_data[2][0]          #전단철근 직경
+        self.av_leg = processed_data[2][1]          #전단철근 다리개수
+        self.av_space = processed_data[2][2]        #전단철근 배치간격
+        self.sg = processed_data[2][3]              #복부스트럿 각도 입력방법 선택
+        self.seta = processed_data[2][4]            #복부스트럿 각도 직접입력값
+        self.alpha_dgree = processed_data[2][5]     #전단철근과 주철근 각도(주철근으로부터 시계방향각도)
+#        self.δ = 1                                 #재분배 모멘트율 설정
+        self.E_s = self.rebar_material.E_s          #철근의 탄성계수
         self.Mu_nm = self.Mu*1000000
         self.Vu_n = self.Vu*1000
         self.Nu_n = self.Nu*1000
@@ -59,6 +60,7 @@ class CalcReinfoeceConcrete:
         self.as_use2 = self.rebar.get_area(self.as_dia2)
         self.as_use3 = self.rebar.get_area(self.as_dia3)
         
+        
         self.d_c = (self.as_use1*self.as_num1*self.dc_1 + self.as_use2*self.as_num2*self.dc_2 + self.as_use3*self.as_num3*self.dc_3)/(self.as_use1*self.as_num1 + self.as_use2*self.as_num2 + self.as_use3*self.as_num3)
 
 #------------------------------
@@ -67,6 +69,7 @@ class CalcReinfoeceConcrete:
     def calculate(self):
         # Perform all necessary calculations here
         self.calc_moment()
+        self.calc_shear()
         # Add other calculation methods as needed
         return self.get_results()
     
@@ -80,11 +83,11 @@ class CalcReinfoeceConcrete:
         self.lo_bal = (0.85 * self.beta_1 * self.f_ck / self.f_y) * (6000 / (6000 + self.f_y))                         #균형철근비
         self.lo_max = 0.75 * self.lo_bal                                                                               #최대철근비 
         self.lo_min_1 = 1.4 / self.f_y                                                                                 #최소철근비
-        self.lo_min_2 = 0.8 * math.sqrt(self.f_ck) / self.f_y
+        self.lo_min_2 = 0.25 * math.sqrt(self.f_ck) / self.f_y
                                                                                     
         self.lo_min = max(self.lo_min_1, self.lo_min_2)                                       
 
-        self.d_eff = self.beam_h - self.d_c                                                                            #단면 유효높이
+        self.d_eff = self.beam_h - self.d_c                                                                            #휨단면 유효높이
         self.as_use = self.as_use1 * self.as_num1 + self.as_use2 * self.as_num2 + self.as_use3 * self.as_num3          #전체 사용철근량
         self.lo_use = self.as_use/(self.beam_b*self.d_eff)                                                             #사용철근비
 
@@ -107,7 +110,8 @@ class CalcReinfoeceConcrete:
 
         temp_a = (self.f_y**2)/(2 * 0.85 * self.f_ck * self.beam_b)
         temp_b = -self.f_y * self.d_eff
-        self.as_req = (-temp_b - (temp_b**2 - 4 * temp_a * self.Mu_nm)**(1/2)) / (2 * temp_a)                          #필요철근량 산정
+        temp_c = self.Mu_nm / self.pi_f_r
+        self.as_req = (-temp_b - sqrt(temp_b**2 - 4 * temp_a * temp_c)) / (2 * temp_a)                          #필요철근량 산정
 
         self.lo_min_3 = self.as_req * 4 / ( 3 * self.beam_b*self.d_eff )
         self.lo_min_f = max(self.lo_min, self.lo_min_3)
@@ -126,66 +130,16 @@ class CalcReinfoeceConcrete:
 #------------------------------
 
     def calc_shear(self) :
-#        self.k = 1+math.sqrt(200/self.D)     #단면크기효과 고려한 계수
-#        if self.k > 2 :
-#            self.k1 = 2
-#        else :
-#            self.k1 = self.k
-#        self.fctk = 0.7*0.3*self.fcm**(2/3)     #콘크리트 인장강도
-#        self.fnn = self.Nu*1000/(self.H*self.B)  #전단철근이 없는경우 축인장응력
-#        self.fnmax = 0.2*self.Øc*self.fck       #이값이상 사용금지인지 단면을 증가시켜야 되는지 알수 없음
-#        self.fn = min(self.fnn, self.fnmax)
-#        self.ρs = min(self.ρ, 0.02)
-#        self.Vc  = (0.85*self.Øc*self.k*(self.ρs*self.fck)**(1/3) + 0.15*self.fn)*(self.B*self.D)  #전단철근이 없는 부재의 설계전단강도
-#       self.Vcdmin = (0.4*self.Øc*self.fctk + 0.15*self.fn)*(self.B*self.D)   #최소설계 전단강도
-#        self.Vcd = max(self.Vc,self.Vcdmin)
-#                    
-#        self.Avs = self.rebar(self.AvDia)*self.AvLeg #전단철근량  
-#        self.α = 90.0
-#        self.ν = 0.6*(1 - self.fck/250)
-#        self.z = 0.9*self.D
-#        if self.fnn < 0 :
-#           self.αcw = 0
-#        elif self.fnn == 0:
-#            self.αcw = 1.0
-#        elif self.fnn <= 0.25*self.Øc*self.fck:
-#            self.αcw = 1.0+self.fnn/(self.Øc*self.fck)
-#       elif self.fnn <= 0.5*self.Øc*self.fck:
-#            self.αcw = 1.25
-#        elif self.fnn <= 1.0*self.Øc*self.fck:
-#            self.αcw = 2.5*(1-self.fnn/(self.Øc*self.fck))    
-#        else:
-#            self.αcw = 0
-#    
-#        self.cotθ1 = 2.5              #cotθ = 2.5(θ=21.8도) 적용시
-#        self.tanθ1 = 1/self.cotθ1
-#        self.cotθ2 = 1                #cotθ = 1.0(θ=45.0도) 적용시
-#        self.tanθ2 = 1/self.cotθ2
-#        self.Vdmax1 = (self.ν*self.Øc*self.fck*self.B*self.z) / (self.cotθ1+self.tanθ1)
-#        self.Vdmax2 = (self.ν*self.Øc*self.fck*self.B*self.z) / (self.cotθ2+self.tanθ2)
-#        if self.sg == 1 :             #input에 1번 직접입력시 입력값 적용
-#            self.cotθ = self.seta
-#        elif self.sg == 2 :           #input에 2번 중간값입력시 중간값 적용  
-#            self.cotθ = (1+2.5)/2
-#        else :                        #input에 3번 자동산출입력시 자동계산 적용 (Eurocode 적용)
-#            if self.Vun <= self.Vdmax1 :   #Vu가 Vmax1 보다 작은경우 cotθ = 2.5(θ=21.8도) 적용 
-#                self.cotθ = 2.5
-#            elif self.Vun > self.Vdmax2 :  #Vu가 Vmax2 보다 큰경우 cotθ = 0 적용으로 단면 증가 필요
-#                self.cotθ = 0
-#            else :
-#                self.cotθ = 1/math.tan(0.5*math.asin(self.Vun /(0.2*self.fck*(1-self.fck/250)*self.B*self.z)))  #Vu가 Vmax2 보다 큰경우 산정불가식
-#        self.tanθ = 1/self.cotθ
-#        self.θ = math.degrees(math.atan(self.tanθ))
-#                
-#        self.Vd = (self.Øs*self.fy*self.Avs*0.9*self.D / self.AvSpace)*self.cotθ 
-#        self.Vdmax = (self.ν*self.Øc*self.fck*self.B*self.z) / (self.cotθ+self.tanθ)#
-#
-#        self.ρvuse = self.Avs / (self.AvSpace*self.B*math.sin(self.α))
-#        self.ρvmin = 0.08*math.sqrt(self.fck) / self.fy
-#        self.s1max = 0.75*self.D*(1+(1/math.tan(self.α*math.pi/180)))   #종방향 전단철근 간격규정
-#        self.s2max = min(0.75*self.D, 600)                              #횡방향 철근 최대폭 
-#        self.s2 = self.B-2*self.Dc                                      #횡방향 철근 간격
-#    
+        self.d_eff_v = self.beam_h_v - self.d_c                                                           #전단단면 유효높이
+        self.V_c  = sqrt(self.f_ck)/6 *self.beam_b*self.d_eff_v                                           #콘크리트 설계전단강도
+        self.pi_V_c = self.pi_v * self.V_c       
+        self.av_req = (self.Vu_n - self.pi_V_c) *  self.av_space / ( self.f_y * self.d_eff_v * self.pi_v) #필요 전단철근량
+        self.av_use = self.rebar.get_area(self.av_dia) * self.av_leg                                      #사용 전단철근량 
+        self.V_s = self.av_use * self.f_y * self.d_eff_v / self.av_space                                      #전단철근 설계전단강도
+        self.V_s_max = 2 * sqrt(self.f_ck) / 3 * self.d_eff_v * self.beam_b                                 #전단철근 최대설계전단강도    
+        self.pi_V_n = self.pi_v * (self.V_c + self.V_s)
+
+        self.av_space_min = min(600, 0.5*self.d_eff_v)                                                     #전단철근 최소간격
 
 #--------------------------------------
 #          사용성 검토(균열검토)

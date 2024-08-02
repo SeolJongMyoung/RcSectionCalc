@@ -63,7 +63,7 @@ def create_excel_output(calculator):
     wsout['C11'].value = f"T = As x fy = {calculator.as_use:.3f} x {calculator.f_y:.3f} = {calculator.tension_force:.1f} N"
     wsout['C12'].value = f"C = 0.85 x fck x a x b = 0.85 x {calculator.f_ck:.3f} x a x {calculator.beam_b:.3f} = {calculator.compression_force:.1f} x a"
     wsout['C13'].value = f"T = C 이므로, a = {calculator.a:.3f} mm, c = {calculator.a:.3f} / β1 = {calculator.a:.3f} / {calculator.beta_1:.3f} = {calculator.c:.3f} mm"
-    wsout['C14'].value = f"εy = fy / Es = {calculator.f_y:.2f} / {calculator.E_s:.2f} = {calculator.epsilon_y:.5f}"
+    wsout['C14'].value = f"εy = fy / Es = {calculator.f_y} / {calculator.E_s} = {calculator.epsilon_y:.5f}"
     wsout['C15'].value = f"εt = 0.00300 x (dt - c) / c = 0.00300 x ({calculator.d_eff:.3f} - {calculator.c:.2f}) / {calculator.c:.2f} = {calculator.epsilon_t:.5f}"
     if calculator.epsilon_t >= 0.005 :
         wsout['C16'].value = f"εt ≥ 0.0050 이므로 {calculator.epsilon_t_result}이며, Ø = {calculator.pi_f_r:.2f} 를 적용한다"
@@ -80,7 +80,7 @@ def create_excel_output(calculator):
     wsout['C24'].value = ' 2 x 0.85 x fck x b                         Øf '
     
     # Section 5: Used Reinforcement
-    wsout['B26'].value = f"5) 사용철근량 : Asuse = {calculator.as_use:.1f} mm², 철근도심 : dc = {calculator.d_eff:.1f} mm [ 사용율 = {calculator.as_use/calculator.as_req:.3f} ]"
+    wsout['B26'].value = f"5) 사용철근량 : Asuse = {calculator.as_use:.1f} mm², 철근도심 : dc = {calculator.d_eff:.1f}mm,  [ 사용율 = {calculator.as_use/calculator.as_req:.3f} ]"
     wsout['F27'].value = f"1단 : {calculator.rebar_id} {calculator.as_dia1} - {calculator.as_num1} EA (= {calculator.as_use1*calculator.as_num1:.1f} mm², dc1 = {calculator.dc_1:.1f} mm)"
     wsout['F28'].value = f"2단 : {calculator.rebar_id} {calculator.as_dia2} - {calculator.as_num2} EA (= {calculator.as_use2*calculator.as_num2:.1f} mm², dc2 = {calculator.dc_2:.1f} mm)"
     wsout['F29'].value = f"3단 : {calculator.rebar_id} {calculator.as_dia3} - {calculator.as_num3} EA (= {calculator.as_use3*calculator.as_num3:.1f} mm², dc3 = {calculator.dc_3:.1f} mm)"
@@ -116,6 +116,37 @@ def create_excel_output(calculator):
     else:
         wsout['C43'].value = f"     = {calculator.M_r:.1f} N.mm < Mu = {calculator.Mu_nm:.1f} N.mm  ∴ N.G  [S.F = {calculator.M_sf:.3f}]"
 
+    #------------------------------
+    #          전단력 검토
+    #------------------------------
+
+    wsout['B45'].value ="10) 전단검토"
+    wsout['C46'].value =f"Φ Vc = Φv x √fck x b x d / 6"
+    wsout['C47'].value =f"    = {calculator.pi_v:.2f} x √{calculator.f_ck} x {calculator.beam_b} x {calculator.d_eff_v:.1f} / 6 = {calculator.pi_V_c:.1f} N"
+    if calculator.pi_V_c >= calculator.Vu_n :
+        wsout['C48'].value =f"Φ Vc ≥ Vu = {calculator.Vu_n:.1f} N  ∴ 전단보강 불필요"
+    else :
+        wsout['C48'].value =f"Φ Vc < Vu = {calculator.Vu_n:.1f} N  ∴ 전단보강 필요"
+        wsout['C49'].value =f"Av_req = ( {calculator.Vu_n/1000:.3f} - {calculator.pi_V_c/1000:.3f} ) x {calculator.av_space:.1f} / ( {calculator.f_y} x {calculator.d_eff_v:.1f} x {calculator.pi_v:.2f}) = {calculator.av_req:.3f} mm²"
+        wsout['C50'].value =f"Av_use = {calculator.av_use:.3f} mm² ( {calculator.rebar_id}{calculator.av_dia} - {calculator.av_leg}EA,  C.T.C {calculator.av_space} mm )"
+        if calculator.av_space > calculator.av_space_min :
+            wsout['C51'].value =f"사용간격 {calculator.av_space} mm > 최소간격 = min(60cm, 0.5D) = {calculator.av_space_min:.3f}  ∴ N.G"
+        else :
+            wsout['C51'].value =f"사용간격 {calculator.av_space}mm ≤ 최소간격 = min(60cm, 0.5D) = {calculator.av_space_min:.3f}  ∴ O.K"
+        wsout['C52'].value =f"Vs = {calculator.av_use:.3f} x {calculator.f_y:.1f} x {calculator.d_eff_v:.1f} / {calculator.av_space} = {calculator.V_s:.1f} N "
+        wsout['C53'].value =f"Vs_max = 2 x √{calculator.f_ck:.1f} / 3 x {calculator.beam_b} x {calculator.d_eff_v:.3f} "
+
+        if calculator.V_s <= calculator.V_s_max :
+            wsout['C54'].value =f"       = {calculator.V_s_max:.1f} N ≤ Vs = {calculator.V_s:.1f} N  ∴ O.K" 
+        else :
+            wsout['C54'].value =f"       = {calculator.V_s_max:.1f} N > Vs = {calculator.V_s:.1f} N  ∴ N.G" 
+
+        if calculator.pi_V_n >= calculator.Vu_n :
+            wsout['C55'].value =f" ΦVn = {calculator.pi_v:.2f} x ( {calculator.V_c:.1f} + {calculator.V_s:.1f} ) = {calculator.pi_V_n:.3f} N ≥ Vu = {calculator.Vu_n:.1f} N  ∴ O.K" 
+        else :
+            wsout['C55'].value =f" ΦVn = {calculator.pi_v:.2f} x ( {calculator.V_c:.1f} + {calculator.V_s:.1f} ) = {calculator.pi_V_n:.3f} N < Vu = {calculator.Vu_n:.1f} N  ∴ N.G"
+        
+    
     # Save the workbook
     wb.save('Calc_As_Output.xlsx')
     wb.close()

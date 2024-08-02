@@ -13,7 +13,7 @@ class DataProcessor:
         try:
             wb = openpyxl.load_workbook(self.file_path, read_only=True)
             ws = wb['Sheet1']
-            ranges = ['C4:L4', 'C8:K8', 'C11:H11']
+            ranges = ['C4:M4', 'C8:K8', 'C11:H11']
             self.data = []
             for cell_range in ranges:
                 data_list = []
